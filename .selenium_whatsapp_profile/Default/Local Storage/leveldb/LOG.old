@@ -1,0 +1,5 @@
+2026/04/14-18:17:33.329 1144 Creating DB C:\Carpool agent\.selenium_whatsapp_profile\Default\Local Storage\leveldb since it was missing.
+2026/04/14-18:17:33.399 1144 Reusing MANIFEST C:\Carpool agent\.selenium_whatsapp_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/14-19:00:49.425 1144 Level-0 table #5: started
+2026/04/14-19:00:49.447 1144 Level-0 table #5: 20078 bytes OK
+2026/04/14-19:00:49.454 1144 Delete type=0 #3

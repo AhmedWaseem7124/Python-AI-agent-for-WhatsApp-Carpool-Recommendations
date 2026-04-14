@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carpool AI Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero-card compact">
+            <div>
+                <p class="eyebrow">Top matches</p>
+                <h1>Recommended carpools</h1>
+                <p class="hero-copy">Scores are lower when pickup/drop locations text-match your options and time is closer to your preferred window.</p>
+            </div>
+            <a class="secondary-link" href="{{ url_for('index') }}">Back to dashboard</a>
+        </header>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Current preferences</h2>
+                <span class="panel-subtitle">These drive the ranking</span>
+            </div>
+            <div class="summary-grid">
+                <div><span>Pickup</span><strong>{{ preferences.pickup_location or '-' }}</strong></div>
+                <div><span>Drop</span><strong>{{ preferences.dropoff_location or '-' }}</strong></div>
+                <div><span>You are</span><strong>{{ preferences.user_intent or '-' }}</strong></div>
+                <div><span>Window start</span><strong>{{ preferences.time_start or '-' }}</strong></div>
+                <div><span>Window end</span><strong>{{ preferences.time_end or '-' }}</strong></div>
+            </div>
+        </section>
+
+        <section class="panel table-panel">
+            <div class="panel-header">
+                <h2>Best matches</h2>
+                <span class="panel-subtitle">Top 10 from latest 50 posts</span>
+            </div>
+            <p class="panel-copy">Matched rides found: {{ match_count }}</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Sender</th>
+                            <th>Pickup</th>
+                            <th>Drop</th>
+                            <th>Type</th>
+                            <th>Time</th>
+                            <th>Seats</th>
+                            <th>Score</th>
+                            <th>Pickup match %</th>
+                            <th>Drop match %</th>
+                            <th>Time diff (min)</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in matches %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ match.sender or '-' }}</td>
+                                <td>{{ match.pickup_location or '-' }}</td>
+                                <td>{{ match.dropoff_location or '-' }}</td>
+                                <td>{{ match.ride_type or '-' }}</td>
+                                <td>{{ match.time or '-' }}</td>
+                                <td>{{ match.seats if match.seats is not none else '-' }}</td>
+                                <td>{{ match.score }}</td>
+                                <td>{{ match.pickup_match_percent }}</td>
+                                <td>{{ match.drop_match_percent }}</td>
+                                <td>{{ match.time_difference_minutes }}</td>
+                                <td class="message-cell">{{ match.raw_message_text or match.raw_message_id }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="12" class="empty-state">No matches on this page. If you recently changed preferences, hard refresh and resave them. The backend can still match rows from the latest 50 posts.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel table-panel">
+            <div class="panel-header">
+                <h2>Available carpools</h2>
+                <span class="panel-subtitle">Latest captured rows</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Pickup</th>
+                            <th>Drop</th>
+                            <th>Type</th>
+                            <th>Time</th>
+                            <th>Seats</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for carpool in carpools %}
+                            <tr>
+                                <td>{{ carpool.sender or '-' }}</td>
+                                <td>{{ carpool.pickup_location or '-' }}</td>
+                                <td>{{ carpool.dropoff_location or '-' }}</td>
+                                <td>{{ carpool.ride_type or '-' }}</td>
+                                <td>{{ carpool.time or '-' }}</td>
+                                <td>{{ carpool.seats if carpool.seats is not none else '-' }}</td>
+                                <td class="message-cell">{{ carpool.raw_message_text or carpool.raw_message_id }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="empty-state">No cars captured yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

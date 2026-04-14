@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carpool AI Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero-card">
+            <div>
+                <p class="eyebrow">WhatsApp carpool assistant</p>
+                <h1>Carpool AI</h1>
+                <p class="hero-copy">Track a WhatsApp Web group, store carpool messages locally, and rank the best rides using only free tools.</p>
+            </div>
+            <div class="status-pill {% if scraper_running %}status-live{% endif %}">
+                {% if scraper_running %}Scraper running{% else %}Scraper idle{% endif %}
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section class="flash-stack">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        <main class="grid-layout">
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Preferences</h2>
+                    <span class="panel-subtitle">Saved locally in session</span>
+                </div>
+                <form method="post" class="stack-form">
+                    <label>
+                        <span>WhatsApp group name</span>
+                        <input type="text" name="group_name" value="{{ preferences.group_name }}" placeholder="Example: Daily Carpool Group">
+                    </label>
+                    <label>
+                        <span>Pickup location</span>
+                        <input type="text" name="pickup_location" value="{{ preferences.pickup_location }}" placeholder="Example: DHA Phase 8, Clifton, PECHS">
+                    </label>
+                    <label>
+                        <span>Drop location</span>
+                        <input type="text" name="dropoff_location" value="{{ preferences.dropoff_location }}" placeholder="Example: IBA Main Campus, Saddar">
+                    </label>
+                    <div class="two-col">
+                        <label>
+                            <span>You are</span>
+                            <select name="user_intent">
+                                <option value="looking_for_carpool" {% if preferences.user_intent == 'looking_for_carpool' %}selected{% endif %}>Looking for carpool</option>
+                                <option value="looking_for_passengers" {% if preferences.user_intent == 'looking_for_passengers' %}selected{% endif %}>Looking for passengers</option>
+                                <option value="all" {% if preferences.user_intent == 'all' %}selected{% endif %}>Show all ride types</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Preferred start</span>
+                            <input type="time" name="time_start" value="{{ preferences.time_start }}">
+                        </label>
+                        <label>
+                            <span>Preferred end</span>
+                            <input type="time" name="time_end" value="{{ preferences.time_end }}">
+                        </label>
+                    </div>
+                    <button type="submit" class="primary-btn">Save preferences</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Scraping</h2>
+                    <span class="panel-subtitle">Manual QR login required once</span>
+                </div>
+                <p class="panel-copy">Click below to open WhatsApp Web in Selenium, log in manually, and start collecting messages from your configured group.</p>
+                <p class="panel-copy">Last group: {{ scraper_status.last_group_name or '-' }} | Last start: {{ scraper_status.last_started_at or '-' }}</p>
+                {% if scraper_status.last_error %}
+                    <div class="flash info">Last scraper error: {{ scraper_status.last_error }}</div>
+                {% endif %}
+                <form action="{{ url_for('scrape') }}" method="post">
+                    <input type="hidden" name="group_name" value="{{ preferences.group_name }}">
+                    <button type="submit" class="secondary-btn">Start scraper</button>
+                </form>
+                <a class="text-link" href="{{ url_for('results') }}">View ranked recommendations</a>
+            </section>
+        </main>
+
+        <section class="panel table-panel">
+            <div class="panel-header">
+                <h2>Available carpools</h2>
+                <span class="panel-subtitle">Latest records from SQLite</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Pickup</th>
+                            <th>Drop</th>
+                            <th>Type</th>
+                            <th>Time</th>
+                            <th>Seats</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for carpool in carpools %}
+                            <tr>
+                                <td>{{ carpool.sender or '-' }}</td>
+                                <td>{{ carpool.pickup_location or '-' }}</td>
+                                <td>{{ carpool.dropoff_location or '-' }}</td>
+                                <td>{{ carpool.ride_type or '-' }}</td>
+                                <td>{{ carpool.time or '-' }}</td>
+                                <td>{{ carpool.seats if carpool.seats is not none else '-' }}</td>
+                                <td class="message-cell">{{ carpool.raw_message_text or carpool.raw_message_id }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="empty-state">No carpools captured yet. Start the scraper and refresh later.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
