@@ -194,7 +194,7 @@ python -m pip show Flask selenium webdriver-manager
 
 ## Current Limitations
 
-- WhatsApp Web DOM can change and may require selector updates.
+- WhatsApp Web DOM can change and may require the selector updates.
 - Parser is rule-based; very unusual phrasing may parse partially.
 - Unknown ride types are still stored, but intent filters may skip them depending on preference.
 
